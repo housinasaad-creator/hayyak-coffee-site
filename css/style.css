@@ -88,7 +88,7 @@ html[lang=ar] .nav a { font-size: 16px; letter-spacing: 0; }
 @media (max-width: 520px) { .brand .bn em { display: none; } .brand b { letter-spacing: .22em; font-size: 17px; } .lang button { min-width: 34px; } }
 
 /* ------------------------------------------------------------ رحلة البنّ */
-.journey { position: relative; height: 780vh; --g1: 28, 34, 28; --g2: 10, 9, 7; --gx: 50%; --gy: 50%; background: rgb(var(--g2)); }
+.journey { position: relative; height: 830vh; --g1: 28, 34, 28; --g2: 10, 9, 7; --gx: 50%; --gy: 50%; background: rgb(var(--g2)); }
 .journey .stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; background: radial-gradient(120% 95% at var(--gx) var(--gy), rgb(var(--g1)), rgb(var(--g2)) 72%); }
 .journey canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: pan-y; }
 .stage .shade { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, rgba(8, 7, 6, .82) 0%, rgba(8, 7, 6, .46) 34%, transparent 62%), radial-gradient(130% 100% at 50% 50%, transparent 55%, rgba(0, 0, 0, .55) 100%); }

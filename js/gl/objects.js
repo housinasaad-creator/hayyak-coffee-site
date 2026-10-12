@@ -107,8 +107,8 @@ function podTextures() {
   }, { linear: true });
   return (_podTex = { map, bump });
 }
-export function makePod() {
-  const len = 3.5, Rr = 0.95, U = 72, V = 110, pos = [], uv = [], idx = [];
+export function makePod(lo = false) {
+  const len = 3.5, Rr = 0.95, U = lo ? 40 : 72, V = lo ? 56 : 110, pos = [], uv = [], idx = [];
   for (let j = 0; j <= V; j++) {
     const s = j / V, z = (s - 0.5) * len;
     // بيضوية: الكتلة أقرب للعنق، ثم تستدق إلى منقار قصير
@@ -151,8 +151,8 @@ export function makeSeeds(n = 8) {
 }
 
 /* ---------------------------------------------------------------- حبّة البنّ (تتحمّص) */
-export function beanGeometry() {
-  const geo = new THREE.SphereGeometry(1, 144, 112);
+export function beanGeometry(ws = 144, hs = 112) {
+  const geo = new THREE.SphereGeometry(1, ws, hs);
   const p = geo.attributes.position, a = 1.0, b = 0.66, c = 0.43, seamMap = new Map();
   for (let i = 0; i < p.count; i++) {
     let x = p.getX(i), y = p.getY(i), z = p.getZ(i);
@@ -210,7 +210,7 @@ export function makeBean() {
 
 /* حقل حبوب بنّ محمّصة (مثبّتة حول الفنجان): InstancedMesh واحد */
 export function makeBeanField(n) {
-  const geo = beanGeometry();
+  const geo = beanGeometry(72, 52);   // حبوب صغيرة على الشاشة: 7 آلاف مثلث بدل 32 ألفاً
   const mat = new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.38, metalness: 0, clearcoat: 0.5, clearcoatRoughness: 0.32, envMapIntensity: 1.4 });
   const mesh = new THREE.InstancedMesh(geo, mat, n);
   const col = new THREE.Color();
@@ -282,37 +282,37 @@ export function makePot() {
     c.fillStyle = '#e8e8e8'; for (const y of [30, 82, 140, 192, 240]) c.fillRect(0, y, w, 3);
   }, { linear: true });
   engraved.repeat.set(2, 1);
-  const brass = new THREE.MeshPhysicalMaterial({ color: 0xc99a46, metalness: 1, roughness: 0.27, envMapIntensity: 1.5, bumpMap: engraved, bumpScale: 0.9, clearcoat: 0.25, clearcoatRoughness: 0.25 });
+  const brass = new THREE.MeshStandardMaterial({ color: 0xc99a46, metalness: 1, roughness: 0.32, envMapIntensity: 1.4, bumpMap: engraved, bumpScale: 0.9 });
   const brassPlain = brass.clone(); brassPlain.bumpMap = null;
-  const dark = new THREE.MeshPhysicalMaterial({ color: 0x1b0f08, roughness: 0.45, metalness: 0, clearcoat: 0.4 });
+  const dark = new THREE.MeshStandardMaterial({ color: 0x1b0f08, roughness: 0.5, metalness: 0 });
 
-  const body = lathe([[0.01, 0.02], [8.4, 0.02], [9.1, 0.5], [9.7, 1.7], [10.5, 3.8], [11.0, 6.4], [10.6, 9.0], [9.5, 11.8], [8.2, 14.8], [7.0, 17.8], [6.1, 20.6], [5.6, 22.6], [5.9, 23.5], [5.7, 24.2], [5.0, 24.2]], 112);
+  const body = lathe([[0.01, 0.02], [8.4, 0.02], [9.1, 0.5], [9.7, 1.7], [10.5, 3.8], [11.0, 6.4], [10.6, 9.0], [9.5, 11.8], [8.2, 14.8], [7.0, 17.8], [6.1, 20.6], [5.6, 22.6], [5.9, 23.5], [5.7, 24.2], [5.0, 24.2]], 56);
   const bodyM = new THREE.Mesh(weldSeam(body), brass); grp.add(bodyM);
   for (const [r, y, tr] of [[9.85, 2.2, 0.38], [10.98, 6.9, 0.45], [8.3, 14.4, 0.4], [5.75, 21.8, 0.4]]) {
-    const t = new THREE.Mesh(new THREE.TorusGeometry(r, tr, 14, 96).rotateX(Math.PI / 2), brassPlain); t.position.y = y; grp.add(t);
+    const t = new THREE.Mesh(new THREE.TorusGeometry(r, tr, 8, 48).rotateX(Math.PI / 2), brassPlain); t.position.y = y; grp.add(t);
   }
   // سطح القهوة داخل الدلّة (يُرى عند فتح الغطاء)
-  const inner = new THREE.Mesh(new THREE.CircleGeometry(5.0, 48).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0x120804, roughness: 0.25, emissive: 0x4a1a06, emissiveIntensity: 0.25 }));
+  const inner = new THREE.Mesh(new THREE.CircleGeometry(5.0, 24).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0x120804, roughness: 0.25, emissive: 0x4a1a06, emissiveIntensity: 0.25 }));
   inner.position.y = 21.3; grp.add(inner);
 
   // الصبّة
   const spoutCurve = new THREE.CatmullRomCurve3([new THREE.Vector3(8.4, 5.5, 0), new THREE.Vector3(12.6, 9.2, 0), new THREE.Vector3(15.4, 14.8, 0), new THREE.Vector3(17.4, 20.8, 0), new THREE.Vector3(19.6, 26.2, 0)]);
-  const spout = new THREE.Mesh(taperedTube(spoutCurve, t => lerp(2.2, 0.95, t) * (t > 0.93 ? 1 + (t - 0.93) * 4.2 : 1), 80, 24), brassPlain); grp.add(spout);
+  const spout = new THREE.Mesh(taperedTube(spoutCurve, t => lerp(2.2, 0.95, t) * (t > 0.93 ? 1 + (t - 0.93) * 4.2 : 1), 34, 14), brassPlain); grp.add(spout);
   const tipP = spoutCurve.getPointAt(1);
-  const lipRing = new THREE.Mesh(new THREE.TorusGeometry(1.25, 0.2, 10, 28), brassPlain); lipRing.position.copy(tipP); lipRing.lookAt(spoutCurve.getTangentAt(1).add(tipP)); grp.add(lipRing);
+  const lipRing = new THREE.Mesh(new THREE.TorusGeometry(1.25, 0.2, 6, 16), brassPlain); lipRing.position.copy(tipP); lipRing.lookAt(spoutCurve.getTangentAt(1).add(tipP)); grp.add(lipRing);
 
   // اليد
   const hCurve = new THREE.CatmullRomCurve3([new THREE.Vector3(-5.9, 22.0, 0), new THREE.Vector3(-11.4, 20.4, 0), new THREE.Vector3(-15.6, 14.8, 0), new THREE.Vector3(-14.2, 8.6, 0), new THREE.Vector3(-10.2, 5.6, 0)]);
-  grp.add(new THREE.Mesh(taperedTube(hCurve, () => 0.8, 60, 16), brassPlain));
+  grp.add(new THREE.Mesh(taperedTube(hCurve, () => 0.8, 24, 10), brassPlain));
   const grip = new THREE.CatmullRomCurve3([hCurve.getPointAt(0.32), hCurve.getPointAt(0.42), hCurve.getPointAt(0.5), hCurve.getPointAt(0.58), hCurve.getPointAt(0.68)]);
-  grp.add(new THREE.Mesh(taperedTube(grip, t => 1.15 + Math.sin(t * Math.PI) * 0.25, 30, 16), dark));
+  grp.add(new THREE.Mesh(taperedTube(grip, t => 1.15 + Math.sin(t * Math.PI) * 0.25, 12, 10), dark));
 
   // الغطاء بمفصّلة عند جهة اليد
   const lidPivot = new THREE.Group(); lidPivot.position.set(-5.4, 24.2, 0); grp.add(lidPivot);
   const lid = new THREE.Group(); lid.position.set(5.4, 0, 0); lidPivot.add(lid);
-  lid.add(new THREE.Mesh(weldSeam(lathe([[0.01, 0.02], [5.3, 0.0], [5.45, 0.5], [5.0, 0.9], [4.4, 1.5], [3.4, 2.4], [2.2, 3.3], [1.0, 3.9], [0.01, 4.1]], 96)), brass));
-  const fin = new THREE.Mesh(new THREE.SphereGeometry(1.15, 24, 18), brassPlain); fin.position.y = 4.9; lid.add(fin);
-  const finBase = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.9, 0.9, 20), brassPlain); finBase.position.y = 4.1; lid.add(finBase);
+  lid.add(new THREE.Mesh(weldSeam(lathe([[0.01, 0.02], [5.3, 0.0], [5.45, 0.5], [5.0, 0.9], [4.4, 1.5], [3.4, 2.4], [2.2, 3.3], [1.0, 3.9], [0.01, 4.1]], 48)), brass));
+  const fin = new THREE.Mesh(new THREE.SphereGeometry(1.15, 14, 10), brassPlain); fin.position.y = 4.9; lid.add(fin);
+  const finBase = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.9, 0.9, 12), brassPlain); finBase.position.y = 4.1; lid.add(finBase);
 
   return { group: grp, lidPivot, tipLocal: tipP.clone().add(new THREE.Vector3(0, 0.2, 0)), mouthY: 24.2, inner, handleLocal: new THREE.Vector3(-14.5, 12, 0), mats: { brass } };
 }
@@ -405,8 +405,8 @@ export function makeFinjan(drawEmblem) {
 /* ---------------------------------------------------------------- المجمر (الجمر تحت الدلّة) */
 export function makeBrazier() {
   const grp = new THREE.Group();
-  const mat = new THREE.MeshPhysicalMaterial({ color: 0x2a1c12, metalness: 0.9, roughness: 0.42, envMapIntensity: 0.9 });
-  const bowl = new THREE.Mesh(weldSeam(lathe([[0.01, 0.0], [7.5, 0.0], [8.8, 0.4], [10.6, 2.4], [11.8, 4.8], [12.3, 6.0], [12.0, 6.3], [11.0, 5.4], [9.6, 3.2], [7.0, 1.6], [0.01, 1.4]], 96)), mat);
+  const mat = new THREE.MeshStandardMaterial({ color: 0x2a1c12, metalness: 0.9, roughness: 0.45, envMapIntensity: 0.9 });
+  const bowl = new THREE.Mesh(weldSeam(lathe([[0.01, 0.0], [7.5, 0.0], [8.8, 0.4], [10.6, 2.4], [11.8, 4.8], [12.3, 6.0], [12.0, 6.3], [11.0, 5.4], [9.6, 3.2], [7.0, 1.6], [0.01, 1.4]], 48)), mat);
   grp.add(bowl);
   for (let i = 0; i < 3; i++) { // قوائم
     const a = i / 3 * Math.PI * 2 + 0.5, leg = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.5, 2.5, 10), mat); leg.position.set(Math.cos(a) * 7, -0.9, Math.sin(a) * 7); grp.add(leg);
@@ -517,7 +517,7 @@ export function makeStoneFloor(radius = 90) {
 }
 
 export function makeTray(r = 8.4) {
-  const mat = new THREE.MeshPhysicalMaterial({ color: 0x4b3d26, metalness: 0.7, roughness: 0.58, envMapIntensity: 0.4 });
+  const mat = new THREE.MeshStandardMaterial({ color: 0x4b3d26, metalness: 0.7, roughness: 0.58, envMapIntensity: 0.4 });
   const pts = [[0.01, 0.0], [r - 1, 0.0], [r - 0.4, 0.2], [r, 0.7], [r + 0.05, 0.9], [r - 0.3, 0.95], [r - 0.5, 0.5], [r - 1.6, 0.35], [0.01, 0.35]];
-  return new THREE.Mesh(weldSeam(lathe(pts, 96)), mat);
+  return new THREE.Mesh(weldSeam(lathe(pts, 56)), mat);
 }

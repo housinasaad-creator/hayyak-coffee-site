@@ -59,7 +59,7 @@ async function startJourney() {
   const names = ['j.c1.k', 'j.c2.k', 'j.c3.k', 'j.c4.k', 'j.c5.k', 'j.c6.k'];
   dots.innerHTML = names.map((k, i) => `<button type="button" role="tab" aria-label="${i + 1}" data-i="${i}"><span data-i18n="${k}"></span></button>`).join('');
   $$('span', dots).forEach(sp => { sp.textContent = t(sp.dataset.i18n); });
-  if (mobile) section.style.height = '640vh';
+  if (mobile) section.style.height = '690vh';
 
   let story = null; let crackShown = 0;
   const ui = {
@@ -99,7 +99,6 @@ async function startJourney() {
   // iOS يطلب إذناً صريحاً لحسّاس الحركة (لمسة واحدة على لوحة الطقس تكفي)
   $('#cer').addEventListener('pointerdown', () => { try { if (typeof DeviceMotionEvent !== 'undefined' && DeviceMotionEvent.requestPermission) DeviceMotionEvent.requestPermission().catch(() => {}); } catch (e) {} }, { once: true });
   $('#shakeBtn').addEventListener('click', () => story.manualShake());
-  $('#skipC').addEventListener('click', () => { story.finishCeremony(true); });
   $('#goOn').addEventListener('click', () => scrollTo({ top: story.secTop + story.secH + 4, behavior: 'smooth' }));
   // توقيف الرسم خارج الشاشة
   const io = new IntersectionObserver((es) => es.forEach(e => { if (e.isIntersecting) story.start(); else story.stop(); }), { threshold: 0 });

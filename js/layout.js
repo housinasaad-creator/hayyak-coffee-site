@@ -35,7 +35,7 @@ function buildChrome() {
     <a class="brand" href="index.html" aria-label="${BRAND.name}">${markSVG()}<span class="bn"><b>${BRAND.name}</b><em>${BRAND.nameAr}</em></span></a>
     <nav class="nav" aria-label="Main">${NAV.map(([id, href, k]) => `<a href="${href}" ${PAGE === id ? 'class="on" aria-current="page"' : ''} data-i18n="${k}"></a>`).join('')}</nav>
     <div class="tools">
-      <div class="lang" role="group" aria-label="Language">${LANGS.map(l => `<button type="button" data-lang="${l}" aria-pressed="false">${l === 'ar' ? 'ع' : l.toUpperCase()}</button>`).join('')}</div>
+      <div class="lang" role="group" aria-label="Language">${LANGS.map(l => `<button type="button" data-lang="${l}" aria-pressed="false">${l.toUpperCase()}</button>`).join('')}</div>
       ${PAGE === 'home' ? `<button class="snd" id="sndBtn" type="button" aria-pressed="false" data-i18n-aria="nav.sound" aria-label="Sound"><svg class="off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 9l4 6M21 9l-4 6"/></svg><svg class="on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg></button>` : ''}
       <a class="btn gold cta" href="index.html#contact" data-i18n="nav.quote"></a>
       <button class="burger" type="button" aria-label="Menu" data-i18n-aria="nav.menu"><i></i></button>

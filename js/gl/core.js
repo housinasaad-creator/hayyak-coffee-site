@@ -15,7 +15,7 @@ export class Stage {
     this.renderer.toneMappingExposure = 1.08;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.setClearColor(0x000000, 0);
-    this.quality = { dpr: Math.min(window.devicePixelRatio || 1, this.mobile ? 1.5 : 2), level: 0 };
+    this.quality = { dpr: Math.min(window.devicePixelRatio || 1, this.mobile ? 1.5 : 1.75), level: 0 };
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(28, 1, 0.5, 600);
     this.scene.add(this.camera);
@@ -110,9 +110,9 @@ export class Stage {
 
   /* حاكم الجودة: ينزل بالدقة إن تدهور الأداء */
   _govern(dt) {
-    this._ft.push(dt); if (this._ft.length < 90) return;
+    this._ft.push(dt); if (this._ft.length < 60) return;
     const avg = this._ft.reduce((a, b) => a + b, 0) / this._ft.length; this._ft.length = 0;
-    if (avg > 0.026 && this.quality.dpr > 1) { this.quality.dpr = Math.max(1, this.quality.dpr - 0.25); this.resize(); }
+    if (avg > 0.021 && this.quality.dpr > 1) { this.quality.dpr = Math.max(1, this.quality.dpr - 0.25); this.resize(); }
   }
 
   add(fn) { this.hooks.push(fn); }

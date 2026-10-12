@@ -44,8 +44,9 @@ export class Story {
     this.p = 0; this.ps = 0; this.forceP = null; this.reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.mouse = { x: 0, y: 0, tx: 0, ty: 0 };
     this.cer = { active: false, done: false, phase: 'fill', t: 0, cups: 0, pourAmt: 0, lift: 0, level: 0, streamOn: false, ret: 0, cupX: 0, cupV: 0, rot: 0, slosh: new THREE.Vector2(), sloshV: new THREE.Vector2(), shakes: [], meter: 0, shakeEnergy: 0, sipLift: 0 };
-    this.locked = false; this.lastCh = -1; this.crackA = false; this.crackB = false; this.roast = 0;
+    this.locked = false; this.tail = 0.5; this._autoPending = false; this.lastCh = -1; this.crackA = false; this.crackB = false; this.roast = 0;
     this._build();
+    this._warm();
     this.stage.add((dt, t) => this._frame(dt, t));
     this._bindInput();
     this._measure();
@@ -80,10 +81,11 @@ export class Story {
     this.potSteam = O.makeSteam(this.mobile ? 36 : 60, 26, 2.4, 3.6); sc.add(this.potSteam);
     this.lidSteam = O.makeSteam(this.mobile ? 30 : 50, 20, 4, 6); sc.add(this.lidSteam);
     this.cupSteam = O.makeSteam(this.mobile ? 30 : 56, 17, 2.2, 2.6); sc.add(this.cupSteam);
-    const b1 = O.softBlob(40, 0.7); b1.position.set(T.x, 0.05, 0); sc.add(b1);
-    const b2 = O.softBlob(15, 0.75); b2.position.set(CUP.x, 0.06, 0); sc.add(b2);
+    const b1 = O.softBlob(40, 0.7); b1.position.set(T.x, 0.05, 0); sc.add(b1); this.b1 = b1;
+    const b2 = O.softBlob(15, 0.75); b2.position.set(CUP.x, 0.06, 0); sc.add(b2); this.b2 = b2;
+    this._spinQ = new THREE.Quaternion(); this._spinAxis = new THREE.Vector3(0.6, 1, 0.3).normalize();
     // حبوب البنّ المتناثرة حول الفنجان + هيل وبذور
-    this.nBeans = this.mobile ? 20 : 30;
+    this.nBeans = this.mobile ? 18 : 24;
     this.beans = O.makeBeanField(this.nBeans); sc.add(this.beans);
     this.beanRest = [];
     const qa = new THREE.Quaternion(), qb = new THREE.Quaternion(), ax = new THREE.Vector3(1, 0, 0), ay = new THREE.Vector3(0, 1, 0);
@@ -98,12 +100,30 @@ export class Story {
     this._dm = new THREE.Matrix4(); this._dq = new THREE.Quaternion(); this._dp = new THREE.Vector3(); this._ds = new THREE.Vector3();
     this.decor = new THREE.Group(); sc.add(this.decor);
     [[10.5, 6.5, 0.9], [-9.5, 8.5, 2.2], [3.5, -11, 4.0], [-4.5, 12, 5.1]].forEach(([dx, dz, ry], i) => {
-      const g = O.makePod(); g.scale.setScalar(1.05); g.position.set(CUP.x + dx, 1.15, dz); g.rotation.set(0.1, ry, 0.15); g.userData = { t0: 0.52 + i * 0.012, y: 1.15 }; this.decor.add(g);
+      const g = O.makePod(true); g.scale.setScalar(1.05); g.position.set(CUP.x + dx, 1.15, dz); g.rotation.set(0.1, ry, 0.15); g.userData = { t0: 0.52 + i * 0.012, y: 1.15 }; this.decor.add(g);
     });
     const sd = O.makeSeeds(7); sd.children.forEach((m, i) => { m.scale.setScalar(0.75); m.position.set(CUP.x + (Math.random() - .5) * 28, 0.2, (Math.random() - .5) * 20); m.userData = { t0: 0.53 + i * 0.01, y: 0.2 }; this.decor.add(m); });
     // حبّات الهال التي تسقط في الدلّة
-    this.drops = [0, 1, 2].map(i => { const g = O.makePod(); g.scale.setScalar(1.15); g.visible = false; g.userData = { i }; sc.add(g); return g; });
+    this.drops = [0, 1, 2].map(i => { const g = O.makePod(true); g.scale.setScalar(1.15); g.visible = false; g.userData = { i }; sc.add(g); return g; });
     sc.fog = null;
+  }
+
+  /* تسخين مسبق: يُترجَم كل شيدر ويُرفع كل نسيج وكل شكل مرة واحدة أثناء التحميل (ولا يحدث تقطيع عند الوصول لمحطة جديدة).
+     بعدها تُخفى العناصر غير اللازمة لكل فصل؛ ضوء الجمر يُترجم بحالتيه (ظاهر/مخفي) فلا يُعاد ترجمة الشيدرات عند تبديله. */
+  _warm() {
+    const S = this.stage, sc = S.scene, cam = S.camera, r = S.renderer, hid = [], cull = [];
+    S.canvas.style.visibility = 'hidden';
+    sc.traverse(o => { if (!o.visible) hid.push(o); o.visible = true; if (o.frustumCulled) { cull.push(o); o.frustumCulled = false; } });
+    try {
+      r.compile(sc, cam);
+      sc.traverse(o => { const m = o.material; if (!m) return; for (const mm of (Array.isArray(m) ? m : [m])) for (const k in mm) { const v = mm[k]; if (v && v.isTexture) r.initTexture(v); } });
+      r.render(sc, cam);                                   // يرفع كل الأشكال إلى الذاكرة
+      this.brazier.light.visible = false; r.compile(sc, cam); r.render(sc, cam);   // حالة بلا ضوء الجمر
+      this.brazier.light.visible = true;
+      r.clear();
+    } catch (e) { /* التسخين اختياري */ }
+    for (const o of cull) o.frustumCulled = true;
+    for (const o of hid) o.visible = false;
   }
 
   /* ------------------------------------------------------------ الإدخال */
@@ -125,13 +145,7 @@ export class Story {
       if (this.cer.active && !this.cer.done && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
         if (this._lastArrow && this._lastArrow !== e.key) this._shakeCount(); this._lastArrow = e.key;
       }
-      if (this.locked && ['PageDown', 'End', ' ', 'ArrowDown'].includes(e.key)) e.preventDefault();
     });
-    addEventListener('wheel', (e) => { if (this.locked && e.deltaY > 0) e.preventDefault(); }, { passive: false });
-    let ty0 = 0;
-    addEventListener('touchstart', (e) => { ty0 = e.touches[0].clientY; }, { passive: true });
-    addEventListener('touchmove', (e) => { if (this.locked && e.touches[0].clientY < ty0 - 2) e.preventDefault(); }, { passive: false });
-    addEventListener('scroll', () => { if (this.locked && scrollY > this.lockY) scrollTo(0, this.lockY); }, { passive: true });
   }
 
   /* مستشعر الهزّ: انعكاسات اتجاه الإصبع/الفأرة الأفقي */
@@ -151,6 +165,11 @@ export class Story {
     this.sfx.rattle(); c.meter = Math.min(1, c.shakes.length / 5);
     if (c.shakes.length >= 5) this.finishCeremony();
   }
+  /* التمرير نفسه يهزّ الفنجان: إن تابع الزائر النزول بعد وصول الرحلة لنهايتها يهتزّ الفنجان تلقائياً ثم تُفتح الصفحة له */
+  autoShake() {
+    const c = this.cer; if (!c.active || c.done || this._autoPending) return;
+    this._autoPending = true; this._autoShake = 1.0; this.sfx.rattle(); setTimeout(() => { this.finishCeremony(); this._autoPending = false; }, 650);
+  }
   manualShake() { // زر "هزّ" لمن لا يملك فأرة/حسّاساً
     const c = this.cer; if (!c.active || c.done) return;
     this._autoShake = 1.2; this.sfx.rattle(); setTimeout(() => this.finishCeremony(), 900);
@@ -166,14 +185,14 @@ export class Story {
   _measure() {
     const r = this.section.getBoundingClientRect();
     this.secTop = scrollY + r.top; this.secH = this.section.offsetHeight; this.vh = innerHeight;
-    this.lockY = this.secTop + this.secH - this.vh - 2;
+    this.span = Math.max(1, this.secH - this.vh * (1 + this.tail));    // آخر نصف شاشة يبقى فيها المشهد ثابتاً بعد اكتمال p
+    this.lockY = this.secTop + this.span;                              // موضع التمرير الذي يبلغ عنده p القيمة 1
   }
 
   /* ------------------------------------------------------------ تحديث */
   setP(p, instant) { this.forceP = p; if (instant) this.ps = p; }
   readScroll() {
-    const span = this.secH - this.vh;
-    return clamp((scrollY - this.secTop) / Math.max(1, span));
+    return clamp((scrollY - this.secTop) / this.span);
   }
 
   _cam() {
@@ -200,6 +219,7 @@ export class Story {
     const k = this.reduced ? 1 : 1 - Math.exp(-dt * 4.2);
     this.ps += (target - this.ps) * k; if (Math.abs(target - this.ps) < 1e-4) this.ps = target;
     const p = this.ps;
+    if (this.forceP === null && c.active && !c.done && scrollY > this.lockY + this.vh * 0.1) this.autoShake();
     M.x += (M.tx - M.x) * (1 - Math.exp(-dt * 3)); M.y += (M.ty - M.y) * (1 - Math.exp(-dt * 3));
     if (this._shakeCam > 0) this._shakeCam = Math.max(0, this._shakeCam - dt * 3);
 
@@ -251,6 +271,11 @@ export class Story {
 
     // ---- المجمر والدلّة
     const floorA = smooth(0.4, 0.47, p); this.floor.visible = floorA > 0.01; this.floor.material.opacity = floorA;
+    // إخفاء ما لا يلزم: عناصر الطاولة لا تُرسم قبل الاقتراب منها، والدلّة لا تُرسم أثناء لقطات الفنجان القريبة
+    const tbl = p > 0.4, potNeeded = tbl && (p < 0.585 || p > 0.615);
+    for (const c of this.brazier.group.children) if (c !== this.brazier.light) c.visible = tbl;
+    this.brazier.light.visible = tbl;
+    this.pot.group.visible = potNeeded; this.tray.visible = tbl; this.finjan.group.visible = tbl; this.embers.visible = tbl; this.b1.visible = tbl; this.b2.visible = tbl;
     const heat = smooth(0.44, 0.52, p);
     this.brazier.coalMat.uniforms.uTime.value = time; this.brazier.coalMat.uniforms.uHeat.value = 0.55 + 0.6 * heat;
     this.brazier.light.intensity = (50 + 70 * heat) * (0.9 + 0.1 * Math.sin(time * 7) * Math.sin(time * 3.1));
@@ -279,7 +304,7 @@ export class Story {
     this._pourAndCeremony(dt, time, p);
 
     // ---- البخار
-    const su = (m, amt) => { m.material.uniforms.uTime.value = time; m.material.uniforms.uAmt.value = amt; m.material.uniforms.uPx.value = S.quality.dpr; };
+    const su = (m, amt) => { m.visible = tbl && amt > 0.01; if (!m.visible) return; m.material.uniforms.uTime.value = time; m.material.uniforms.uAmt.value = amt; m.material.uniforms.uPx.value = S.quality.dpr; };
     const steamPot = smooth(0.46, 0.54, p);
     su(this.potSteam, steamPot * (1 - smooth(0.58, 0.64, p) * 0.7));
     su(this.lidSteam, steamPot * (0.5 + 0.8 * lidOpen) * (1 - smooth(0.56, 0.64, p)));
@@ -289,6 +314,7 @@ export class Story {
     this._tint(p);
     this._cam();
     this.ui.onProgress && this.ui.onProgress(p, ch);
+    if (this.stage.canvas.style.visibility === 'hidden') this.stage.canvas.style.visibility = '';
   }
 
   _bounce(t) { // easeOutBounce
@@ -300,7 +326,7 @@ export class Story {
   _dropBeans(p) {
     const show = p > 0.495; this.beans.visible = show; this.decor.visible = show;
     if (!show) return;
-    const m = this._dm, q = this._dq, v = this._dp, sc = this._ds, spin = new THREE.Quaternion(), axis = new THREE.Vector3(0.6, 1, 0.3).normalize();
+    const m = this._dm, q = this._dq, v = this._dp, sc = this._ds, spin = this._spinQ, axis = this._spinAxis;
     for (let i = 0; i < this.nBeans; i++) {
       const r = this.beanRest[i], t = clamp((p - r.t0) / 0.05);
       if (t <= 0) { m.makeScale(0, 0, 0); this.beans.setMatrixAt(i, m); continue; }
@@ -335,10 +361,11 @@ export class Story {
   }
 
   _pourAndCeremony(dt, time, p) {
-    const c = this.cer, S = this.stage;
+    const c = this.cer, S = this.stage, tbl2 = p > 0.4;
     const inCer = p >= 0.975 && this.forceP === null || (this.forceP !== null && this.forceP >= 0.975);
-    if (inCer && !c.active) { c.active = true; if (!c.done) { this.locked = true; this._measure(); } c.phase = 'fill'; c.t = 0; c.cups = 0; c.level = 0; this.ui.onCups && this.ui.onCups(0, false); }
-    if (!inCer && c.active) { c.active = false; this.locked = false; if (p < 0.9) { c.done = false; c.ret = 0; c.meter = 0; this.ui.onDone && this.ui.onDone(false); } }
+    if (inCer && !c.active) { c.active = true; c.phase = 'fill'; c.t = 0; c.cups = 0; c.level = 0; this.ui.onCups && this.ui.onCups(0, false); }
+    if (!inCer && c.active) { c.active = false; this._autoPending = false; }
+    if (!inCer && c.done && p < 0.9) { c.done = false; c.ret = 0; c.meter = 0; this.ui.onDone && this.ui.onDone(false); }
 
     let lift, pourAmt, level, streamOn;
     if (!c.active) {
@@ -413,7 +440,7 @@ export class Story {
     if (streamOn) { this._head = Math.min(1, (this._head || 0) + dt * 5.5); this._tail = Math.max(0, (this._tail || 0) - dt * 8); }
     else { this._tail = Math.min(1, (this._tail || 0) + dt * 7); if (this._tail >= 1) this._head = 0; }
     su.uHead.value = this._head || 0; su.uTail.value = this._tail || 0;
-    st.visible = (this._head || 0) > 0.01 && (this._tail || 0) < 0.99;
+    st.visible = tbl2 && (this._head || 0) > 0.01 && (this._tail || 0) < 0.99;
     this.sfx.pour(st.visible ? 0.85 : 0, level);
     // أماكن البخار
     this.potSteam.position.copy(tip); this.lidSteam.position.copy(this.pot.group.localToWorld(new THREE.Vector3(0, 29.5, 0)));
@@ -421,7 +448,7 @@ export class Story {
     // دمج الحالة للـ UI عند أول دخول
     if (c.done && !this._doneShown) { this._doneShown = true; this._shakeCam = 1; }
     if (!c.done) this._doneShown = false;
-    this.locked = c.active && !c.done;
+    this.locked = false;
   }
 
   /* ألوان الخلفية تتبدّل مع الفصول */
@@ -446,7 +473,7 @@ export class Story {
   start() { this.stage.start(); }
   stop() { this.stage.stop(); this.sfx.stopAll(); }
   chapterY(i) { // موضع التمرير لبداية الفصل i
-    const span = this.secH - this.vh; return this.secTop + span * (CH[i] + (i === 0 ? 0 : 0.004));
+    return this.secTop + this.span * (CH[i] + (i === 0 ? 0 : 0.004));
   }
 }
 export { CH as CHAPTERS };
