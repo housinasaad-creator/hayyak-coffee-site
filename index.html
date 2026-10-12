@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="ar" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>حيّاك | قهوة عربية وسورية بالجملة</title>
+<meta name="description" content="Hayyak — Arabic & Syrian coffee roasted in small batches and supplied wholesale. حيّاك: قهوة عربية وسورية بالجملة. Toptan Arap ve Suriye kahvesi.">
+<meta name="theme-color" content="#0b0907">
+<meta name="robots" content="noindex, nofollow">
+<meta property="og:title" content="Hayyak · حيّاك">
+<meta property="og:description" content="The coffee never ends until you shake the cup.">
+<meta property="og:image" content="assets/og.jpg">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/style.css">
+<script type="importmap">{"imports":{"three":"./js/vendor/three.module.min.js"}}</script>
+</head>
+<body data-page="home">
+<div id="hdr"></div>
+
+<main>
+  <!-- ============ رحلة البنّ ============ -->
+  <section class="journey" id="journey" aria-label="Hayyak">
+    <div class="stage" id="stage">
+      <canvas id="gl" aria-hidden="true"></canvas>
+      <div class="shade"></div>
+      <button class="skipj" id="skipj" type="button" data-i18n="j.skip"></button>
+
+      <div class="ch on" data-ch="0"><div class="k" data-i18n="j.c1.k"></div><h1 data-i18n="j.c1.t"></h1><p data-i18n="j.c1.p"></p></div>
+      <div class="ch" data-ch="1"><div class="k" data-i18n="j.c2.k"></div><h2 data-i18n="j.c2.t"></h2><p data-i18n="j.c2.p"></p></div>
+      <div class="ch" data-ch="2"><div class="k" data-i18n="j.c3.k"></div><h2 data-i18n="j.c3.t"></h2><p data-i18n="j.c3.p"></p></div>
+      <div class="ch" data-ch="3"><div class="k" data-i18n="j.c4.k"></div><h2 data-i18n="j.c4.t"></h2><p data-i18n="j.c4.p"></p></div>
+      <div class="ch" data-ch="4"><div class="k" data-i18n="j.c5.k"></div><h2 data-i18n="j.c5.t"></h2><p data-i18n="j.c5.p"></p></div>
+      <div class="ch" data-ch="5"><div class="k" data-i18n="j.c6.k"></div><h2 data-i18n="j.c6.t"></h2><p data-i18n="j.c6.p"></p></div>
+
+      <div class="hud" id="hud" aria-hidden="true">
+        <div class="row"><span data-i18n="j.temp"></span></div>
+        <div class="temp"><span id="tempv">25</span><small>°C</small></div>
+        <div class="bar"><i id="barv"></i></div>
+        <div class="row"><span data-i18n="j.stage"></span></div>
+        <div class="name" id="stname">—</div>
+        <div class="crack" id="crack"></div>
+      </div>
+
+      <div class="cer" id="cer">
+        <div class="live">
+          <div class="cupno" id="cupno"></div>
+          <div class="q" id="cq"></div>
+          <div class="hint" id="chint"><span class="swing"></span><span class="mouse" data-i18n="j.hint"></span><span class="tap" data-i18n="j.hintTouch"></span></div>
+          <div class="acts">
+            <button class="btn gold" id="shakeBtn" type="button" data-i18n="j.shake"></button>
+            <div class="meter" aria-hidden="true"><i id="meter"></i></div>
+            <button class="skip" id="skipC" type="button" data-i18n="j.skip"></button>
+          </div>
+        </div>
+        <div class="fin">
+          <h3 data-i18n="j.done.t"></h3>
+          <p data-i18n="j.done.p"></p>
+          <button class="down" id="goOn" type="button" data-i18n-aria="j.done.go" aria-label="Continue"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M6 13l6 6 6-6"/></svg></button>
+        </div>
+      </div>
+
+      <div class="dots" id="dots" role="tablist"></div>
+      <div class="scrollhint" id="shint"><i></i><span data-i18n="j.scroll"></span></div>
+    </div>
+  </section>
+
+  <!-- ============ مقدمة ============ -->
+  <section class="sec intro" id="intro">
+    <div class="pattern"></div>
+    <div class="wrap">
+      <div class="eyebrow reveal" data-i18n="h.intro.k"></div>
+      <h2 class="h2 reveal d1" data-i18n="h.intro.t"></h2>
+      <p class="lead reveal d2" data-i18n="h.intro.p"></p>
+    </div>
+  </section>
+
+  <!-- ============ قهوتان ============ -->
+  <section class="sec two" id="two">
+    <div class="wrap">
+      <div class="eyebrow reveal" data-i18n="h.two.k"></div>
+      <h2 class="h2 reveal d1" data-i18n="h.two.t"></h2>
+      <div class="twogrid">
+        <article class="cup-card reveal d1">
+          <span class="tag num">DALLAH</span>
+          <img class="art" src="assets/cup-bitter.svg" alt="" width="340" height="340">
+          <h3 data-i18n="h.bit.t"></h3><p data-i18n="h.bit.p"></p>
+        </article>
+        <article class="cup-card reveal d2">
+          <span class="tag num">RAKWA</span>
+          <img class="art" src="assets/cup-sweet.svg" alt="" width="340" height="340">
+          <h3 data-i18n="h.swt.t"></h3><p data-i18n="h.swt.p"></p>
+        </article>
+      </div>
+      <div class="more reveal"><a class="btn line" href="coffee.html"><span data-i18n="h.two.go"></span></a></div>
+    </div>
+  </section>
+
+  <!-- ============ منتجات مختارة ============ -->
+  <section class="sec feat" id="feat">
+    <div class="wrap">
+      <div class="eyebrow reveal" data-i18n="h.feat.k"></div>
+      <h2 class="h2 reveal d1" data-i18n="h.feat.t"></h2>
+      <div class="pgrid" id="featGrid"></div>
+      <div class="more reveal"><a class="btn gold" href="products.html"><span data-i18n="btn.products"></span></a></div>
+    </div>
+  </section>
+
+  <!-- ============ اقلب الفنجان ============ -->
+  <section class="sec fortune-teaser" id="ft">
+    <div class="wrap ft-grid">
+      <div>
+        <div class="eyebrow reveal" data-i18n="h.fort.k"></div>
+        <h2 class="h2 reveal d1" data-i18n="h.fort.t"></h2>
+        <p class="lead reveal d2" data-i18n="h.fort.p"></p>
+        <p class="reveal d3" style="margin-top:28px"><a class="btn gold" href="coffee.html#fortune"><span data-i18n="btn.try"></span></a></p>
+      </div>
+      <a class="ft-art reveal d2" href="coffee.html#fortune" aria-label="Fortune cup"><canvas id="ftCv"></canvas></a>
+    </div>
+  </section>
+
+  <!-- ============ كيف نعمل ============ -->
+  <section class="sec how" id="how">
+    <div class="wrap">
+      <div class="eyebrow reveal" data-i18n="h.how.k"></div>
+      <h2 class="h2 reveal d1" data-i18n="h.how.t"></h2>
+      <div class="steps">
+        <div class="step reveal d1"><h3 data-i18n="h.how.1.t"></h3><p data-i18n="h.how.1.p"></p></div>
+        <div class="step reveal d2"><h3 data-i18n="h.how.2.t"></h3><p data-i18n="h.how.2.p"></p></div>
+        <div class="step reveal d3"><h3 data-i18n="h.how.3.t"></h3><p data-i18n="h.how.3.p"></p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ تواصل ============ -->
+  <section class="sec contact" id="contact">
+    <div class="wrap cgrid">
+      <div>
+        <div class="eyebrow reveal" data-i18n="c.k"></div>
+        <h2 class="h2 reveal d1" data-i18n="c.t"></h2>
+        <p class="lead reveal d2" data-i18n="c.p"></p>
+        <ul class="cinfo reveal d3" id="cinfo"></ul>
+      </div>
+      <form class="form reveal d2" id="quoteForm" novalidate>
+        <div class="f"><label for="fn" data-i18n="c.name"></label><input id="fn" name="name" autocomplete="name"></div>
+        <div class="f"><label for="fb" data-i18n="c.biz"></label><input id="fb" name="biz" autocomplete="organization"></div>
+        <div class="f"><label for="fp" data-i18n="c.phone"></label><input id="fp" name="phone" type="tel" autocomplete="tel" dir="ltr"></div>
+        <div class="f"><label for="fi" data-i18n="c.interest"></label><select id="fi" name="interest"></select></div>
+        <div class="f w"><label for="fq" data-i18n="c.qty"></label><input id="fq" name="qty" data-i18n-ph="c.qty.ph"></div>
+        <div class="f w"><label for="fm" data-i18n="c.msg"></label><textarea id="fm" name="msg"></textarea></div>
+        <div class="f w"><button class="btn gold" type="submit"><span data-i18n="c.send"></span></button></div>
+        <p class="note" data-i18n="c.note"></p>
+      </form>
+    </div>
+  </section>
+</main>
+
+<div id="ftr"></div>
+<script type="module" src="js/layout.js"></script>
+<script type="module" src="js/home.js"></script>
+</body>
+</html>

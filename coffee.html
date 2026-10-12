@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="ar" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>عالم القهوة | حيّاك</title>
+<meta name="description" content="The world of Arabic and Syrian coffee: etiquette, bitter vs sweet, roast scale, brew calculator and a turn-the-cup game.">
+<meta name="theme-color" content="#0b0907">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/fonts.css">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="coffee">
+<div id="hdr"></div>
+<main>
+  <section class="phero">
+    <div class="pattern"></div>
+    <div class="wrap">
+      <div class="eyebrow" data-i18n="w.k"></div>
+      <h1 class="h1" data-i18n="w.t"></h1>
+      <p class="lead" data-i18n="w.p"></p>
+    </div>
+  </section>
+
+  <!-- آداب الضيافة -->
+  <section class="sec" id="etiquette" style="padding-top:30px">
+    <div class="wrap">
+      <div class="eyebrow reveal" data-i18n="w.r.k"></div>
+      <h2 class="h2 reveal d1" data-i18n="w.r.t"></h2>
+      <div class="rules">
+        <article class="rule-card reveal d1"><span class="n">1</span><h3 data-i18n="w.r.1.t"></h3><p data-i18n="w.r.1.p"></p></article>
+        <article class="rule-card reveal d2"><span class="n">2</span><h3 data-i18n="w.r.2.t"></h3><p data-i18n="w.r.2.p"></p></article>
+        <article class="rule-card reveal d3"><span class="n">3</span><h3 data-i18n="w.r.3.t"></h3><p data-i18n="w.r.3.p"></p></article>
+        <article class="rule-card reveal d1"><span class="n">4</span><h3 data-i18n="w.r.4.t"></h3><p data-i18n="w.r.4.p"></p></article>
+        <article class="rule-card reveal d2"><span class="n">5</span><h3 data-i18n="w.r.5.t"></h3><p data-i18n="w.r.5.p"></p></article>
+        <article class="rule-card reveal d3"><span class="n">6</span><h3 data-i18n="w.r.6.t"></h3><p data-i18n="w.r.6.p"></p></article>
+      </div>
+    </div>
+  </section>
+
+  <!-- المقارنة -->
+  <section class="sec" id="compare" style="background:var(--sage)">
+    <div class="wrap">
+      <div class="eyebrow reveal" data-i18n="w.d.k"></div>
+      <h2 class="h2 reveal d1" data-i18n="w.d.t"></h2>
+      <div class="cmp reveal d2">
+        <table>
+          <thead><tr><th></th><th data-i18n="w.d.bit.name"></th><th data-i18n="w.d.swt.name"></th></tr></thead>
+          <tbody>
+            <tr><th data-i18n="w.d.row.roast"></th><td data-i18n="w.d.bit.roast"></td><td data-i18n="w.d.swt.roast"></td></tr>
+            <tr><th data-i18n="w.d.row.grind"></th><td data-i18n="w.d.bit.grind"></td><td data-i18n="w.d.swt.grind"></td></tr>
+            <tr><th data-i18n="w.d.row.pot"></th><td data-i18n="w.d.bit.pot"></td><td data-i18n="w.d.swt.pot"></td></tr>
+            <tr><th data-i18n="w.d.row.spice"></th><td data-i18n="w.d.bit.spice"></td><td data-i18n="w.d.swt.spice"></td></tr>
+            <tr><th data-i18n="w.d.row.sugar"></th><td data-i18n="w.d.bit.sugar"></td><td data-i18n="w.d.swt.sugar"></td></tr>
+            <tr><th data-i18n="w.d.row.cup"></th><td data-i18n="w.d.bit.cup"></td><td data-i18n="w.d.swt.cup"></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- سلّم التحميص -->
+  <section class="sec" id="roast">
+    <div class="wrap">
+      <div class="eyebrow reveal" data-i18n="w.ro.k"></div>
+      <h2 class="h2 reveal d1" data-i18n="w.ro.t"></h2>
+      <p class="lead reveal d2" data-i18n="w.ro.p"></p>
+      <div class="rstudio reveal d2">
+        <div class="bean-view">
+          <svg viewBox="0 0 260 200" aria-hidden="true">
+            <defs>
+              <radialGradient id="bg1" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".45" stop-color="#fff" stop-opacity="0"/></radialGradient>
+              <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="4" result="n"/><feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .55 -.18"/><feComposite in2="SourceGraphic" operator="in"/></filter>
+            </defs>
+            <g transform="rotate(-24 130 100)">
+              <ellipse id="beanBody" cx="130" cy="100" rx="96" ry="64" fill="#cdb25e"/>
+              <ellipse cx="130" cy="100" rx="96" ry="64" filter="url(#grain)" opacity=".7"/>
+              <ellipse cx="130" cy="100" rx="96" ry="64" fill="url(#bg1)"/>
+              <path id="beanCrease" d="M42 108 C78 84 104 128 130 100 C156 72 182 116 218 92" fill="none" stroke="#3b2208" stroke-width="9" stroke-linecap="round" opacity=".85"/>
+              <path d="M42 108 C78 84 104 128 130 100 C156 72 182 116 218 92" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity=".15" transform="translate(0 -6)"/>
+              <ellipse id="beanGloss" cx="96" cy="70" rx="38" ry="12" fill="#fff" opacity="0" transform="rotate(-18 96 70)"/>
+            </g>
+          </svg>
+        </div>
+        <div class="rctl">
+          <h3 id="roName">—</h3>
+          <div class="t num"><b id="roTemp">25</b> °C</div>
+          <p id="roNote"></p>
+          <input type="range" id="roRange" min="0" max="100" value="38" aria-label="Roast">
+          <div class="rticks"><span>0</span><span>20</span><span>40</span><span>60</span><span>80</span><span>100</span></div>
+          <div class="use"><span data-i18n="w.ro.use"></span>: <b id="roUse">—</b></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- حاسبة التحضير -->
+  <section class="sec" id="brew" style="background:var(--sage)">
+    <div class="wrap">
+      <div class="eyebrow reveal" data-i18n="w.b.k"></div>
+      <h2 class="h2 reveal d1" data-i18n="w.b.t"></h2>
+      <p class="lead reveal d2" data-i18n="w.b.p"></p>
+      <div class="calc reveal d2">
+        <div class="ctl">
+          <div><div class="lab"><span data-i18n="w.b.cups"></span><b class="num" id="cupsV">4</b></div><input type="range" id="cups" min="1" max="30" value="4" aria-label="Cups"></div>
+          <div><div class="lab"><span data-i18n="w.b.method"></span></div><div class="seg" id="method"><button type="button" data-m="dallah" aria-pressed="true" data-i18n="w.b.dallah"></button><button type="button" data-m="rakwa" aria-pressed="false" data-i18n="w.b.rakwa"></button></div></div>
+          <div id="sugarBox" hidden><div class="lab"><span data-i18n="w.b.sugar"></span></div><div class="seg" id="sugar"><button type="button" data-s="0" aria-pressed="false" data-i18n="w.b.s0"></button><button type="button" data-s="1" aria-pressed="true" data-i18n="w.b.s1"></button><button type="button" data-s="2" aria-pressed="false" data-i18n="w.b.s2"></button></div></div>
+        </div>
+        <div class="out">
+          <div class="res"><span data-i18n="w.b.coffee"></span><b id="oCoffee">—</b></div>
+          <div class="res"><span data-i18n="w.b.water"></span><b id="oWater">—</b></div>
+          <div class="res"><span data-i18n="w.b.card"></span><b id="oCard">—</b></div>
+          <div class="res" id="oSugarBox"><span data-i18n="w.b.sugarOut"></span><b id="oSugar">—</b></div>
+          <div class="res" style="grid-column:1/-1"><span data-i18n="w.b.time"></span><b id="oTime">—</b></div>
+          <p class="tip" id="oTip"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- الهيل -->
+  <section class="sec" id="cardamom">
+    <div class="wrap cardamom">
+      <div class="pod-art reveal"><img src="assets/products/cardamom.webp" alt="" width="500" height="600" loading="lazy"></div>
+      <div>
+        <div class="eyebrow reveal" data-i18n="w.k2"></div>
+        <h2 class="h2 reveal d1" data-i18n="w.card.t"></h2>
+        <p class="lead reveal d2" data-i18n="w.card.p"></p>
+        <p class="reveal d3" style="margin-top:26px"><a class="btn line" href="products.html?cat=extras"><span data-i18n="btn.products"></span></a></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- اقلب الفنجان -->
+  <section class="sec fortune" id="fortune">
+    <div class="wrap">
+      <div class="eyebrow reveal" data-i18n="w.fort.k"></div>
+      <h2 class="h2 reveal d1" data-i18n="w.fort.t"></h2>
+      <p class="lead reveal d2" data-i18n="w.fort.p"></p>
+      <div class="fgame">
+        <div class="fcup reveal d2" id="fcup"><canvas id="fCv" aria-label="Cup"></canvas><span class="fh" id="fHint" data-i18n="w.fort.hint"></span></div>
+        <div class="fform reveal d3">
+          <div class="row"><input id="fName" maxlength="24" autocomplete="given-name" data-i18n-ph="w.fort.name"><button class="btn gold" id="fGo" type="button" data-i18n="w.fort.go"></button></div>
+          <div class="freading" id="fRead" hidden><h3 data-i18n="w.fort.read"></h3><ul id="fList"></ul><div><button class="btn line" id="fAgain" type="button" data-i18n="w.fort.again"></button></div></div>
+          <p class="fun" data-i18n="w.fort.fun"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+<div id="ftr"></div>
+<script type="module" src="js/layout.js"></script>
+<script type="module" src="js/coffee.js"></script>
+</body>
+</html>
