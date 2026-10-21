@@ -49,7 +49,10 @@ function bindForm() {
 /* ------------------------------------------------------------ رحلة البنّ */
 function webglOK() { try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch (e) { return false; } }
 
-async function startJourney() {
+/* ================= المشهد الثلاثي الأبعاد الحي (محفوظ، لا يُحذف): startJourney3D =================
+   الهيرو الآن فيديو (startJourney أسفله). هذه الدالة كما كانت (Story/WebGL + HUD التحميص + طقس الضيافة) ولا تُستدعى؛
+   لإعادتها: استدعِ startJourney3D() بدل startJourney() وأعد محتوى <template id="scene3d-archive"> في index.html إلى داخل .stage. */
+async function startJourney3D() {
   const section = $('#journey');
   if (!webglOK() || new URLSearchParams(location.search).has('nogl')) { section.classList.add('nogl'); return; }
   const [{ Story, CHAPTERS }, { Sfx }] = await Promise.all([import('./gl/story.js'), import('./gl/sfx.js')]);
@@ -121,4 +124,36 @@ function teaser() {
 function renderAll() { renderFeatured(); renderContact(); }
 window.addEventListener('langchange', renderAll);
 renderAll(); bindForm(); teaser();
+
+/* ------------------------------------------------------------ الرحلة كفيديو بأربع تمريرات (js/hero-video.js) */
+async function startJourney() {
+  const section = $('#journey'), stageEl = $('.stage', section), chs = $$('.ch', section), dots = $('#dots'), shint = $('#shint');
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (new URLSearchParams(location.search).has('nogl')) { section.classList.add('nogl'); return; }
+  const names = ['j.c1.k', 'j.c2.k', 'j.c3.k', 'j.c4.k', 'j.c5.k', 'j.c6.k'], CH_OF = [0, 1, 2, 4, 5], STG = CH_OF.length;     // خمس محطات تعرض الفصول 1 و2 و3 و5 و6
+  dots.innerHTML = CH_OF.map((c, i) => `<button type="button" role="tab" aria-label="${i + 1}" data-i="${i}"><span data-i18n="${names[c]}"></span></button>`).join('');
+  $$('span', dots).forEach(sp => { sp.textContent = t(sp.dataset.i18n); });
+  const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+  let last = -1;
+  const layout = () => {
+    const total = Math.max(1, section.offsetHeight - stageEl.offsetHeight), p = reduced ? 0 : clamp(-section.getBoundingClientRect().top / total), k = clamp(Math.round(p * (STG - 1)), 0, STG - 1);
+    if (k !== last) { last = k; chs.forEach((el, j) => el.classList.toggle('on', j === CH_OF[k])); $$('button', dots).forEach((b, j) => b.classList.toggle('on', j === k)); stageEl.dataset.ch = CH_OF[k]; }
+    shint.style.opacity = p > 0.012 ? 0 : 1;
+  };
+  addEventListener('scroll', layout, { passive: true }); addEventListener('resize', layout, { passive: true }); layout();
+  const { initHeroVideo } = await import('./hero-video.js');
+  const hv = initHeroVideo({
+    hero: section, stick: stageEl, video: $('#hv'), hdr: () => 0, reduced, saveData: !!(navigator.connection && navigator.connection.saveData),
+    stops: [0, 3.4, 6.4, 9.8, 13.4], srcDesktop: 'assets/hero/hero-desktop.mp4', srcPhone: 'assets/hero/hero-phone.mp4', srcDesktopRev: 'assets/hero/hero-desktop-rev.mp4', srcPhoneRev: 'assets/hero/hero-phone-rev.mp4', mobileQuery: '(max-width: 860px)', rate: 2,
+    onFail: () => section.classList.add('nogl')
+  });
+  dots.addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) hv.jump(+b.dataset.i); });
+  $('#skipj').addEventListener('click', () => scrollTo({ top: section.getBoundingClientRect().top + scrollY + section.offsetHeight, behavior: 'smooth' }));
+  const lowMem = (navigator.deviceMemory || 8) <= 2;       // الفيديو يُحمَّل مرة واحدة ويبقى؛ الأجهزة قليلة الذاكرة تُفرِّغه عند الابتعاد
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(([e]) => { if (!e.isIntersecting) hv.pause(); }, { rootMargin: '80px' }).observe(section);
+    new IntersectionObserver(([e]) => { if (e.isIntersecting) hv.load(); else if (lowMem) hv.unload(); }, { rootMargin: '250% 0px 250% 0px' }).observe(section);
+  } else hv.load();
+}
 startJourney();
+
