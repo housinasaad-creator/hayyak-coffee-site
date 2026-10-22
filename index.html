@@ -21,8 +21,7 @@
   <!-- ============ رحلة البنّ ============ -->
   <section class="journey" id="journey" aria-label="Hayyak">
     <div class="stage" id="stage">
-      <picture class="hv-poster" id="hvPoster"><source media="(max-width: 860px)" srcset="assets/hero/poster-m.webp"><img src="assets/hero/poster.webp" width="1280" height="720" alt="" fetchpriority="high"></picture>
-      <video class="hv" id="hv" muted playsinline preload="none" disablepictureinpicture aria-hidden="true" tabindex="-1"></video>
+      <canvas id="gl" aria-hidden="true"></canvas>
       <div class="shade"></div>
       <button class="skipj" id="skipj" type="button" data-i18n="j.skip"></button>
 
@@ -32,6 +31,32 @@
       <div class="ch" data-ch="3"><div class="k" data-i18n="j.c4.k"></div><h2 data-i18n="j.c4.t"></h2><p data-i18n="j.c4.p"></p></div>
       <div class="ch" data-ch="4"><div class="k" data-i18n="j.c5.k"></div><h2 data-i18n="j.c5.t"></h2><p data-i18n="j.c5.p"></p></div>
       <div class="ch" data-ch="5"><div class="k" data-i18n="j.c6.k"></div><h2 data-i18n="j.c6.t"></h2><p data-i18n="j.c6.p"></p></div>
+
+      <div class="hud" id="hud" aria-hidden="true">
+        <div class="row"><span data-i18n="j.temp"></span></div>
+        <div class="temp"><span id="tempv">25</span><small>°C</small></div>
+        <div class="bar"><i id="barv"></i></div>
+        <div class="row"><span data-i18n="j.stage"></span></div>
+        <div class="name" id="stname">—</div>
+        <div class="crack" id="crack"></div>
+      </div>
+
+      <div class="cer" id="cer">
+        <div class="live">
+          <div class="cupno" id="cupno"></div>
+          <div class="q" id="cq"></div>
+          <div class="hint" id="chint"><span class="swing"></span><span class="mouse" data-i18n="j.hint"></span><span class="tap" data-i18n="j.hintTouch"></span></div>
+          <div class="acts">
+            <button class="btn gold" id="shakeBtn" type="button" data-i18n="j.shake"></button>
+            <div class="meter" aria-hidden="true"><i id="meter"></i></div>
+          </div>
+        </div>
+        <div class="fin">
+          <h3 data-i18n="j.done.t"></h3>
+          <p data-i18n="j.done.p"></p>
+          <button class="down" id="goOn" type="button" data-i18n-aria="j.done.go" aria-label="Continue"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M6 13l6 6 6-6"/></svg></button>
+        </div>
+      </div>
 
       <div class="dots" id="dots" role="tablist"></div>
       <div class="scrollhint" id="shint"><i></i><span data-i18n="j.scroll"></span></div>
@@ -126,39 +151,6 @@
       </form>
     </div>
   </section>
-
-<!-- ============ المشهد الثلاثي الأبعاد الحي (محفوظ، لا يُحذف) ============
-     الكانفاس القديم وشاشة HUD للتحميص وواجهة طقس الضيافة (هزّ الفنجان). الهيرو الآن فيديو (assets/hero/*.mp4)؛ هذا القالب غير معروض.
-     لإعادة المشهد الحي: أعد محتواه إلى داخل <div class="stage"> وفعّل startJourney3D() في js/home.js. لإعادة تصوير الفيديو: _hero_video_tools/sites/hayyak.json -->
-<template id="scene3d-archive">
-      <canvas id="gl" aria-hidden="true"></canvas>
-      <div class="hud" id="hud" aria-hidden="true">
-        <div class="row"><span data-i18n="j.temp"></span></div>
-        <div class="temp"><span id="tempv">25</span><small>°C</small></div>
-        <div class="bar"><i id="barv"></i></div>
-        <div class="row"><span data-i18n="j.stage"></span></div>
-        <div class="name" id="stname">—</div>
-        <div class="crack" id="crack"></div>
-      </div>
-
-      <div class="cer" id="cer">
-        <div class="live">
-          <div class="cupno" id="cupno"></div>
-          <div class="q" id="cq"></div>
-          <div class="hint" id="chint"><span class="swing"></span><span class="mouse" data-i18n="j.hint"></span><span class="tap" data-i18n="j.hintTouch"></span></div>
-          <div class="acts">
-            <button class="btn gold" id="shakeBtn" type="button" data-i18n="j.shake"></button>
-            <div class="meter" aria-hidden="true"><i id="meter"></i></div>
-          </div>
-        </div>
-        <div class="fin">
-          <h3 data-i18n="j.done.t"></h3>
-          <p data-i18n="j.done.p"></p>
-          <button class="down" id="goOn" type="button" data-i18n-aria="j.done.go" aria-label="Continue"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M6 13l6 6 6-6"/></svg></button>
-        </div>
-      </div>
-
-</template>
 </main>
 
 <div id="ftr"></div>

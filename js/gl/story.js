@@ -50,8 +50,10 @@ export class Story {
     this.stage.add((dt, t) => this._frame(dt, t));
     this._bindInput();
     this._measure();
-    addEventListener('resize', () => this._measure());
+    this._on('resize', () => this._measure());
   }
+  /* مستمعو النافذة مسجَّلون كي يُزالوا عند التفريغ */
+  _on(type, fn, opt) { (this._ls = this._ls || []).push([type, fn, opt]); addEventListener(type, fn, opt); }
 
   /* ------------------------------------------------------------ بناء المشهد */
   _build() {
@@ -68,7 +70,7 @@ export class Story {
     this.bean = O.makeBean(); this.bean.mesh.position.copy(B); this.bean.mesh.scale.setScalar(BEAN_S); sc.add(this.bean.mesh);
     this.beanGlow = O.glowSprite(0xff8a30, 40, 0.0); this.beanGlow.position.set(B.x, B.y, B.z - 9); sc.add(this.beanGlow);
     // غبار الطحن
-    this.powder = O.makePowder(this.mobile ? 4500 : 8000, B, BEAN_S, new THREE.Vector3(T.x, 31, 0)); sc.add(this.powder);
+    this.powder = O.makePowder(this.mobile ? 3200 : 5500, B, BEAN_S, new THREE.Vector3(T.x, 31, 0)); sc.add(this.powder);
     // الطاولة
     this.floor = O.makeStoneFloor(78); this.floor.position.set(T.x + 14, 0, 0); sc.add(this.floor);
     this.brazier = O.makeBrazier(); this.brazier.group.position.copy(T); sc.add(this.brazier.group);
@@ -77,10 +79,10 @@ export class Story {
     this.finjan = O.makeFinjan((g, x, y, r) => drawMark(g, x, y, r, '#c99a46'));
     this.finjan.group.position.copy(CUP); sc.add(this.finjan.group);
     this.stream = O.makeStream(); sc.add(this.stream);
-    this.embers = O.makeEmbers(this.mobile ? 50 : 90); this.embers.position.copy(T); sc.add(this.embers);
-    this.potSteam = O.makeSteam(this.mobile ? 36 : 60, 26, 2.4, 3.6); sc.add(this.potSteam);
-    this.lidSteam = O.makeSteam(this.mobile ? 30 : 50, 20, 4, 6); sc.add(this.lidSteam);
-    this.cupSteam = O.makeSteam(this.mobile ? 30 : 56, 17, 2.2, 2.6); sc.add(this.cupSteam);
+    this.embers = O.makeEmbers(this.mobile ? 40 : 70); this.embers.position.copy(T); sc.add(this.embers);
+    this.potSteam = O.makeSteam(this.mobile ? 28 : 46, 26, 2.4, 3.6); sc.add(this.potSteam);
+    this.lidSteam = O.makeSteam(this.mobile ? 24 : 38, 20, 4, 6); sc.add(this.lidSteam);
+    this.cupSteam = O.makeSteam(this.mobile ? 24 : 42, 17, 2.2, 2.6); sc.add(this.cupSteam);
     const b1 = O.softBlob(40, 0.7); b1.position.set(T.x, 0.05, 0); sc.add(b1); this.b1 = b1;
     const b2 = O.softBlob(15, 0.75); b2.position.set(CUP.x, 0.06, 0); sc.add(b2); this.b2 = b2;
     this._spinQ = new THREE.Quaternion(); this._spinAxis = new THREE.Vector3(0.6, 1, 0.3).normalize();
@@ -129,19 +131,19 @@ export class Story {
   /* ------------------------------------------------------------ الإدخال */
   _bindInput() {
     const M = this.mouse;
-    addEventListener('pointermove', (e) => {
+    this._on('pointermove', (e) => {
       const nx = e.clientX / innerWidth, ny = e.clientY / innerHeight;
       M.tx = (nx - 0.5) * 2; M.ty = (ny - 0.5) * 2;
       this._shakeSample(e.clientX);
     }, { passive: true });
-    addEventListener('touchmove', (e) => { if (e.touches[0]) this._shakeSample(e.touches[0].clientX); }, { passive: true });
-    addEventListener('devicemotion', (e) => {
+    this._on('touchmove', (e) => { if (e.touches[0]) this._shakeSample(e.touches[0].clientX); }, { passive: true });
+    this._on('devicemotion', (e) => {
       const a = e.accelerationIncludingGravity; if (!a || !this.cer.active || this.cer.done) return;
       const m = Math.hypot(a.x || 0, a.y || 0, a.z || 0);
       if (this._lastAcc !== undefined && Math.abs(m - this._lastAcc) > 9) this._shakeCount();
       this._lastAcc = m;
     });
-    addEventListener('keydown', (e) => {
+    this._on('keydown', (e) => {
       if (this.cer.active && !this.cer.done && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
         if (this._lastArrow && this._lastArrow !== e.key) this._shakeCount(); this._lastArrow = e.key;
       }
@@ -472,6 +474,8 @@ export class Story {
 
   start() { this.stage.start(); }
   stop() { this.stage.stop(); this.sfx.stopAll(); }
+  /* تفريغ كامل من الذاكرة (يُستدعى حين نبتعد عن الهيرو بأكثر من شاشتين ونصف) */
+  dispose() { this.stop(); (this._ls || []).forEach(([t, f, o]) => removeEventListener(t, f, o)); this._ls = []; this.stage.dispose(); if (window.__story === this) window.__story = null; }
   chapterY(i) { // موضع التمرير لبداية الفصل i
     return this.secTop + this.span * (CH[i] + (i === 0 ? 0 : 0.004));
   }

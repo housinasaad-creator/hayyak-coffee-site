@@ -15,7 +15,7 @@ export class Stage {
     this.renderer.toneMappingExposure = 1.08;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.setClearColor(0x000000, 0);
-    this.quality = { dpr: Math.min(window.devicePixelRatio || 1, this.mobile ? 1.5 : 1.75), level: 0 };
+    this.quality = { dpr: Math.min(window.devicePixelRatio || 1, this.mobile ? 1.25 : 1.5), level: 0 };
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(28, 1, 0.5, 600);
     this.scene.add(this.camera);
@@ -63,7 +63,7 @@ export class Stage {
 
   /* غبار عائم داخل صندوق يتبع الكاميرا (يعطي إحساس السفر بين المحطات) */
   buildDust() {
-    const n = this.mobile ? 260 : 520, box = new THREE.Vector3(120, 70, 90);
+    const n = this.mobile ? 180 : 360, box = new THREE.Vector3(120, 70, 90);
     const g = new THREE.BufferGeometry();
     const a = new Float32Array(n * 3), s = new Float32Array(n);
     for (let i = 0; i < n; i++) { a[i * 3] = Math.random() * box.x; a[i * 3 + 1] = Math.random() * box.y; a[i * 3 + 2] = Math.random() * box.z; s[i] = Math.random(); }
@@ -134,6 +134,16 @@ export class Stage {
     requestAnimationFrame(loop);
   }
   stop() { this.running = false; }
+  /* يحرّر كل شيء (الأشكال والخامات والقوام وسياق الرسم) حين يبتعد الزائر عن الهيرو كثيراً */
+  dispose() {
+    this.running = false;
+    this.scene.traverse((o) => {
+      if (o.geometry) o.geometry.dispose();
+      const m = o.material; if (m) (Array.isArray(m) ? m : [m]).forEach((x) => { for (const k in x) { const v = x[k]; if (v && v.isTexture) v.dispose(); } x.dispose(); });
+    });
+    if (this.scene.environment) this.scene.environment.dispose();
+    this.renderer.dispose(); this.renderer.forceContextLoss();
+  }
 }
 
 /* مولّد نسيج 2D سريع */

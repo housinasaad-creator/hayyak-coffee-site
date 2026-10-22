@@ -47,17 +47,17 @@ function bindForm() {
 }
 
 /* ------------------------------------------------------------ رحلة البنّ */
+/* مستوى الجهاز: weak = معالج 4 أنوية أو أقل أو رام 2 غيغا أو أقل → يُتخطّى الهيرو الثلاثي الأبعاد من أول سكرول (صورة + العنوان)؛ lite = متوسط → مشهد أخفّ؛ ?hero=on / ?hero=off للتجربة */
+const deviceTier = (() => { const q = new URLSearchParams(location.search).get('hero'), c = navigator.hardwareConcurrency || 8, m = navigator.deviceMemory || 8; if (q === 'on') return 'full'; if (q === 'off') return 'weak'; return (c <= 4 || m <= 2) ? 'weak' : (c <= 6 || m <= 4) ? 'lite' : 'full'; })();
 function webglOK() { try { const c = document.createElement('canvas'); return !!(c.getContext('webgl2') || c.getContext('webgl')); } catch (e) { return false; } }
 
-/* ================= المشهد الثلاثي الأبعاد الحي (محفوظ، لا يُحذف): startJourney3D =================
-   الهيرو الآن فيديو (startJourney أسفله). هذه الدالة كما كانت (Story/WebGL + HUD التحميص + طقس الضيافة) ولا تُستدعى؛
-   لإعادتها: استدعِ startJourney3D() بدل startJourney() وأعد محتوى <template id="scene3d-archive"> في index.html إلى داخل .stage. */
-async function startJourney3D() {
+async function startJourney() {
   const section = $('#journey');
-  if (!webglOK() || new URLSearchParams(location.search).has('nogl')) { section.classList.add('nogl'); return; }
+  if (!webglOK() || new URLSearchParams(location.search).has('nogl') || deviceTier === 'weak') { section.classList.add('nogl'); if (deviceTier === 'weak') section.classList.add('weak'); return; }
   const [{ Story, CHAPTERS }, { Sfx }] = await Promise.all([import('./gl/story.js'), import('./gl/sfx.js')]);
   const sfx = new Sfx();
   const mobile = matchMedia('(max-width: 860px)').matches || matchMedia('(pointer: coarse)').matches;
+  const lighter = mobile || deviceTier === 'lite';                      // جهاز متوسط: تفاصيل أقل
   const chs = $$('.ch', section), hud = $('#hud'), cer = $('#cer'), dots = $('#dots'), shint = $('#shint');
   const names = ['j.c1.k', 'j.c2.k', 'j.c3.k', 'j.c4.k', 'j.c5.k', 'j.c6.k'];
   dots.innerHTML = names.map((k, i) => `<button type="button" role="tab" aria-label="${i + 1}" data-i="${i}"><span data-i18n="${k}"></span></button>`).join('');
@@ -90,24 +90,31 @@ async function startJourney3D() {
     onMeter(m) { $('#meter').style.width = (m * 100).toFixed(0) + '%'; },
     onDone(d) { cer.classList.toggle('done', !!d); }
   };
-  story = new Story({ canvas: $('#gl'), section, ui, sfx, mobile });
-  window.__story = story;
+  /* المشهد يُبنى حين نقترب من الهيرو ويُفرَّغ بالكامل من الذاكرة حين نبتعد عنه أكثر من شاشتين ونصف (سياق WebGL المفقود لا يُعاد، فنستبدل عنصر canvas) */
+  const build = () => {
+    if (story) return;
+    let cv = $('#gl'); if (cv.dataset.used) { const n = cv.cloneNode(false); delete n.dataset.used; cv.replaceWith(n); cv = n; } cv.dataset.used = '1';
+    story = new Story({ canvas: cv, section, ui, sfx, mobile: lighter }); window.__story = story;
+    story._measure(); ui.onChapter(0); story.start();
+  };
+  const destroy = () => { if (!story) return; story.dispose(); story = null; };
+  build();
 
   // الصوت
   const sbtn = $('#sndBtn');
   if (sbtn) sbtn.addEventListener('click', () => { const on = sfx.toggle(); sbtn.setAttribute('aria-pressed', on ? 'true' : 'false'); });
   // نقاط الفصول والتخطّي
-  dots.addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; scrollTo({ top: story.chapterY(+b.dataset.i), behavior: 'smooth' }); });
-  $('#skipj').addEventListener('click', () => { story.finishCeremony(true); scrollTo({ top: story.secTop + story.secH, behavior: 'smooth' }); });
+  dots.addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b || !story) return; scrollTo({ top: story.chapterY(+b.dataset.i), behavior: 'smooth' }); });
+  $('#skipj').addEventListener('click', () => { story && story.finishCeremony(true); scrollTo({ top: section.getBoundingClientRect().top + scrollY + section.offsetHeight, behavior: 'smooth' }); });
   // iOS يطلب إذناً صريحاً لحسّاس الحركة (لمسة واحدة على لوحة الطقس تكفي)
   $('#cer').addEventListener('pointerdown', () => { try { if (typeof DeviceMotionEvent !== 'undefined' && DeviceMotionEvent.requestPermission) DeviceMotionEvent.requestPermission().catch(() => {}); } catch (e) {} }, { once: true });
-  $('#shakeBtn').addEventListener('click', () => story.manualShake());
-  $('#goOn').addEventListener('click', () => scrollTo({ top: story.secTop + story.secH + 4, behavior: 'smooth' }));
+  $('#shakeBtn').addEventListener('click', () => story && story.manualShake());
+  $('#goOn').addEventListener('click', () => scrollTo({ top: section.getBoundingClientRect().top + scrollY + section.offsetHeight + 4, behavior: 'smooth' }));
   // توقيف الرسم خارج الشاشة
-  const io = new IntersectionObserver((es) => es.forEach(e => { if (e.isIntersecting) story.start(); else story.stop(); }), { threshold: 0 });
+  const io = new IntersectionObserver((es) => es.forEach(e => { if (!story) return; if (e.isIntersecting) story.start(); else story.stop(); }), { threshold: 0 });
   io.observe(section);
-  story.start();
-  addEventListener('load', () => story._measure());
+  new IntersectionObserver((es) => es.forEach(e => { if (e.isIntersecting) build(); else destroy(); }), { rootMargin: '250% 0px 250% 0px' }).observe(section);
+  addEventListener('load', () => story && story._measure());
   window.addEventListener('langchange', () => { const q = $('#cq'); if (q && q.dataset.k) q.textContent = t(q.dataset.k); });
   // أول ظهور: ترتيب الفصل الأول
   ui.onChapter(0);
@@ -124,36 +131,4 @@ function teaser() {
 function renderAll() { renderFeatured(); renderContact(); }
 window.addEventListener('langchange', renderAll);
 renderAll(); bindForm(); teaser();
-
-/* ------------------------------------------------------------ الرحلة كفيديو بأربع تمريرات (js/hero-video.js) */
-async function startJourney() {
-  const section = $('#journey'), stageEl = $('.stage', section), chs = $$('.ch', section), dots = $('#dots'), shint = $('#shint');
-  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (new URLSearchParams(location.search).has('nogl')) { section.classList.add('nogl'); return; }
-  const names = ['j.c1.k', 'j.c2.k', 'j.c3.k', 'j.c4.k', 'j.c5.k', 'j.c6.k'], CH_OF = [0, 1, 2, 4, 5], STG = CH_OF.length;     // خمس محطات تعرض الفصول 1 و2 و3 و5 و6
-  dots.innerHTML = CH_OF.map((c, i) => `<button type="button" role="tab" aria-label="${i + 1}" data-i="${i}"><span data-i18n="${names[c]}"></span></button>`).join('');
-  $$('span', dots).forEach(sp => { sp.textContent = t(sp.dataset.i18n); });
-  const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
-  let last = -1;
-  const layout = () => {
-    const total = Math.max(1, section.offsetHeight - stageEl.offsetHeight), p = reduced ? 0 : clamp(-section.getBoundingClientRect().top / total), k = clamp(Math.round(p * (STG - 1)), 0, STG - 1);
-    if (k !== last) { last = k; chs.forEach((el, j) => el.classList.toggle('on', j === CH_OF[k])); $$('button', dots).forEach((b, j) => b.classList.toggle('on', j === k)); stageEl.dataset.ch = CH_OF[k]; }
-    shint.style.opacity = p > 0.012 ? 0 : 1;
-  };
-  addEventListener('scroll', layout, { passive: true }); addEventListener('resize', layout, { passive: true }); layout();
-  const { initHeroVideo } = await import('./hero-video.js');
-  const hv = initHeroVideo({
-    hero: section, stick: stageEl, video: $('#hv'), hdr: () => 0, reduced, saveData: !!(navigator.connection && navigator.connection.saveData),
-    stops: [0, 3.4, 6.4, 9.8, 13.4], srcDesktop: 'assets/hero/hero-desktop.mp4', srcPhone: 'assets/hero/hero-phone.mp4', srcDesktopRev: 'assets/hero/hero-desktop-rev.mp4', srcPhoneRev: 'assets/hero/hero-phone-rev.mp4', mobileQuery: '(max-width: 860px)', rate: 2,
-    onFail: () => section.classList.add('nogl')
-  });
-  dots.addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) hv.jump(+b.dataset.i); });
-  $('#skipj').addEventListener('click', () => scrollTo({ top: section.getBoundingClientRect().top + scrollY + section.offsetHeight, behavior: 'smooth' }));
-  const lowMem = (navigator.deviceMemory || 8) <= 2;       // الفيديو يُحمَّل مرة واحدة ويبقى؛ الأجهزة قليلة الذاكرة تُفرِّغه عند الابتعاد
-  if ('IntersectionObserver' in window) {
-    new IntersectionObserver(([e]) => { if (!e.isIntersecting) hv.pause(); }, { rootMargin: '80px' }).observe(section);
-    new IntersectionObserver(([e]) => { if (e.isIntersecting) hv.load(); else if (lowMem) hv.unload(); }, { rootMargin: '250% 0px 250% 0px' }).observe(section);
-  } else hv.load();
-}
 startJourney();
-
