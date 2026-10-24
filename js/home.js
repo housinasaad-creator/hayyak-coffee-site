@@ -136,7 +136,7 @@ async function startJourney() {
   const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
   let last = -1;
   const layout = () => {
-    const total = Math.max(1, section.offsetHeight - stageEl.offsetHeight), p = reduced ? 0 : clamp(-section.getBoundingClientRect().top / total), k = clamp(Math.round(p * (STG - 1)), 0, STG - 1);
+    const total = Math.max(1, section.offsetHeight - stageEl.offsetHeight), p = (reduced || section.classList.contains('one')) ? 0 : clamp(-section.getBoundingClientRect().top / total), k = clamp(Math.round(p * (STG - 1)), 0, STG - 1);
     if (k !== last) { last = k; chs.forEach((el, j) => el.classList.toggle('on', j === CH_OF[k])); $$('button', dots).forEach((b, j) => b.classList.toggle('on', j === k)); stageEl.dataset.ch = CH_OF[k]; }
     shint.style.opacity = p > 0.012 ? 0 : 1;
   };
